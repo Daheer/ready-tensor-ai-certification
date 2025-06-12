@@ -46,6 +46,16 @@ if index is None or metadata is None or embed_model is None:
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
 
+# Display chat history
+for msg in st.session_state["messages"]:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+        if msg["role"] == "assistant" and "references" in msg:
+            st.markdown("---")
+            st.markdown("**References:**")
+            for ref in msg["references"]:
+                st.markdown(f"- **{ref.get('title', 'N/A')}** by {ref.get('username', 'N/A')}")
+
 # --- Helper: Retrieve relevant publications ---
 def retrieve_relevant_pubs(query, top_k=TOP_K):
     query_emb = embed_model.encode([query], convert_to_numpy=True)
