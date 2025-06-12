@@ -67,12 +67,11 @@ def build_context_from_pubs(pubs, query):
     for pub in pubs:
         context += f"Title: {pub.get('title', 'N/A')}\n"
         context += f"Author: {pub.get('username', 'N/A')}\n"
-        # Optionally, you can add more fields if you store them in metadata
         context += f"License: {pub.get('license', 'N/A')}\n"
         context += "---\n"
     context += f"\nUser question: {query}\n"
     context += "If you don't know the answer from the sample, say you don't know."
-    return context
+    return context, pubs
 
 # User input
 if prompt := st.chat_input("Ask a question about the publications..."):
@@ -84,23 +83,27 @@ if prompt := st.chat_input("Ask a question about the publications..."):
     pubs = retrieve_relevant_pubs(prompt, TOP_K)
     if not pubs:
         answer = "Sorry, I couldn't find any relevant publications."
+        references = []
     else:
-        context = build_context_from_pubs(pubs, prompt)
+        context, references = build_context_from_pubs(pubs, prompt)
         # Gemini API call
         with st.chat_message("assistant"):
             with st.spinner("Gemini is thinking..."):
                 try:
-
                     response = client.models.generate_content(
                         model="gemini-2.0-flash",
                         contents=context,
                     )
-                    # gemini-2.0-flash
-                    # model = genai.GenerativeModel("gemini-1.5-flash")
-                    # chat = model.start_chat(history=[])
-                    # response = chat.send_message(context)
                     answer = response.text.strip()
                 except Exception as e:
                     answer = f"Error: {e}"
             st.markdown(answer)
+            
+            # Display references
+            if references:
+                st.markdown("---")
+                st.markdown("**References:**")
+                for ref in references:
+                    st.markdown(f"- **{ref.get('title', 'N/A')}** by {ref.get('username', 'N/A')}")
+    
     st.session_state["messages"].append({"role": "assistant", "content": answer}) 
