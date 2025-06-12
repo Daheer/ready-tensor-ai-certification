@@ -5,7 +5,7 @@ from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
 import pickle
-import google as genai
+from google import genai
 
 # Set page config
 st.set_page_config(
