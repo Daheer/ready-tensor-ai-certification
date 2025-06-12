@@ -2,8 +2,9 @@ import streamlit as st
 import json
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
-import chromadb
-from chromadb.config import Settings
+import faiss
+import numpy as np
+import pickle
 import google.generativeai as genai
 
 # Set page config
@@ -28,6 +29,8 @@ if 'selected_publication' not in st.session_state:
     st.session_state.selected_publication = None
 if 'vector_store' not in st.session_state:
     st.session_state.vector_store = None
+if 'documents' not in st.session_state:
+    st.session_state.documents = None
 
 # Load publications data
 @st.cache_data
@@ -37,24 +40,30 @@ def load_publications():
 
 # Load vector store for a specific publication
 def load_vector_store(publication_id):
-    persist_directory = f"vector_stores/{publication_id}"
-    client = chromadb.PersistentClient(path=persist_directory)
-    collection = client.get_collection(name="documents")
-    return collection
+    persist_directory = Path(f"vector_stores/{publication_id}")
+    
+    # Load the FAISS index
+    index = faiss.read_index(str(persist_directory / "index.faiss"))
+    
+    # Load the documents
+    with open(persist_directory / "documents.pkl", "rb") as f:
+        documents = pickle.load(f)
+    
+    return index, documents
 
 def get_relevant_context(question, vector_store, k=3):
+    index, documents = vector_store
+    
     # Get embedding for the question
     model = get_embedding_model()
-    question_embedding = model.encode(question).tolist()
+    question_embedding = model.encode(question)
     
     # Query the vector store
-    results = vector_store.query(
-        query_embeddings=[question_embedding],
-        n_results=k
-    )
+    distances, indices = index.search(question_embedding.reshape(1, -1).astype('float32'), k)
     
-    # Extract and join the documents
-    return "\n\n".join(results['documents'][0])
+    # Get the relevant documents
+    relevant_docs = [documents[i] for i in indices[0]]
+    return "\n\n".join(relevant_docs)
 
 def get_answer(question, context):
     # Create a prompt for Gemini
