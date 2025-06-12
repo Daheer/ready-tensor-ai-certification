@@ -6,7 +6,7 @@ import faiss
 import numpy as np
 import pickle
 from google import genai
-
+import os
 # Set page config
 st.set_page_config(
     page_title="Ready Tensor Publications Explorer",
@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # Initialize Gemini
-client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY"])
+client = genai.Client(api_key=os.getenv('GOOGLE_API_KEY'))
 
 # Initialize sentence transformer model
 @st.cache_resource
