@@ -5,7 +5,7 @@ import pickle
 import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
-import google.generativeai as genai
+from google import genai 
 
 # --- Config ---
 INDEX_FILE = "publications_faiss.index"
@@ -89,9 +89,16 @@ if prompt := st.chat_input("Ask a question about the publications..."):
         with st.chat_message("assistant"):
             with st.spinner("Gemini is thinking..."):
                 try:
-                    model = genai.GenerativeModel("gemini-pro")
-                    chat = model.start_chat(history=[])
-                    response = chat.send_message(context)
+                    client = genai.Client(api_key=GOOGLE_API_KEY)
+
+                    response = client.models.generate_content(
+                        model="gemini-2.0-flash",
+                        contents=context,
+                    )
+                    # gemini-2.0-flash
+                    # model = genai.GenerativeModel("gemini-1.5-flash")
+                    # chat = model.start_chat(history=[])
+                    # response = chat.send_message(context)
                     answer = response.text.strip()
                 except Exception as e:
                     answer = f"Error: {e}"

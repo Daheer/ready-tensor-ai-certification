@@ -22,7 +22,7 @@ This project provides a Streamlit chatbot that helps users explore Ready Tensor 
 
 3. **Run the app:**
    ```bash
-   streamlit run streamlit_app.py
+   streamlit run app.py
    ```
 
 ## Usage
