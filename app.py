@@ -18,7 +18,8 @@ GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY') or st.secrets.get('GOOGLE_API_KEY',
 if not GOOGLE_API_KEY:
     st.error("Please set your Gemini API key in the environment variable 'GOOGLE_API_KEY' or Streamlit secrets.")
     st.stop()
-genai.configure(api_key=GOOGLE_API_KEY)
+
+client = genai.Client(api_key=GOOGLE_API_KEY)
 
 # --- Load FAISS index and mapping ---
 def load_vector_store():
@@ -89,7 +90,6 @@ if prompt := st.chat_input("Ask a question about the publications..."):
         with st.chat_message("assistant"):
             with st.spinner("Gemini is thinking..."):
                 try:
-                    client = genai.Client(api_key=GOOGLE_API_KEY)
 
                     response = client.models.generate_content(
                         model="gemini-2.0-flash",
