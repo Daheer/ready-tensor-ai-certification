@@ -111,8 +111,8 @@ with col1:
         # Display publication details
         st.markdown("### Publication Details")
         st.markdown(f"**Title:** {selected_pub['title']}")
-        st.markdown(f"**Authors:** {', '.join(selected_pub['authors'])}")
-        st.markdown(f"**Year:** {selected_pub['year']}")
+        st.markdown(f"**Author:** {selected_pub['username']}")
+        st.markdown(f"**License:** {selected_pub['license']}")
         
         # Load vector store
         try:
