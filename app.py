@@ -50,6 +50,11 @@ if "messages" not in st.session_state:
 for msg in st.session_state["messages"]:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
+        if msg["role"] == "assistant" and "references" in msg:
+            st.markdown("---")
+            st.markdown("**References:**")
+            for ref in msg["references"]:
+                st.markdown(f"- **{ref.get('title', 'N/A')}** by {ref.get('username', 'N/A')}")
 
 # --- Helper: Retrieve relevant publications ---
 def retrieve_relevant_pubs(query, top_k=TOP_K):
@@ -75,6 +80,10 @@ def build_context_from_pubs(pubs, query):
 
 # User input
 if prompt := st.chat_input("Ask a question about the publications..."):
+    # Clear previous messages
+    st.session_state["messages"] = []
+    
+    # Add user message
     st.session_state["messages"].append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -106,4 +115,9 @@ if prompt := st.chat_input("Ask a question about the publications..."):
                 for ref in references:
                     st.markdown(f"- **{ref.get('title', 'N/A')}** by {ref.get('username', 'N/A')}")
     
-    st.session_state["messages"].append({"role": "assistant", "content": answer}) 
+    # Add assistant message
+    st.session_state["messages"].append({
+        "role": "assistant", 
+        "content": answer,
+        "references": references
+    }) 
